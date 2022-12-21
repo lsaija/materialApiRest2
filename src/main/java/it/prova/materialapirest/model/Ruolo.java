@@ -35,6 +35,14 @@ public class Ruolo {
 	public Ruolo(Long id) {
 		this.id = id;
 	}
+	
+
+	public Ruolo(Long id, String codice) {
+		super();
+		this.id = id;
+		this.codice = codice;
+	
+	}
 
 	public Ruolo(String codice) {
 		this.codice = codice;
@@ -55,5 +63,15 @@ public class Ruolo {
 	public void setCodice(String codice) {
 		this.codice = codice;
 	}
+
+	public Set<Utente> getUtenti() {
+		return utenti;
+	}
+
+	public void setUtenti(Set<Utente> utenti) {
+		this.utenti = utenti;
+	}
+	
+
 
 }

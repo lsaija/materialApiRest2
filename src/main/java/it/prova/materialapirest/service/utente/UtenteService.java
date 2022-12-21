@@ -2,6 +2,8 @@ package it.prova.materialapirest.service.utente;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import it.prova.materialapirest.model.Utente;
 
 public interface UtenteService {
@@ -33,5 +35,7 @@ public interface UtenteService {
 	public void registra(Utente utenteinput);
 	
 	public String mostraRuoli(Utente utenteInput);
+	
+	public Page<Utente> findByExampleWithPagination(Utente example, Integer pageNo, Integer pageSize, String sortBy);
 
 }

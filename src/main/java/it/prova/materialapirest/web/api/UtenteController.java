@@ -2,7 +2,6 @@ package it.prova.materialapirest.web.api;
 
 import java.security.Principal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -21,13 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import it.prova.materialapirest.dto.UtenteDTO;
 import it.prova.materialapirest.model.Utente;
 import it.prova.materialapirest.security.dto.UtenteInfoJWTResponseDTO;
 import it.prova.materialapirest.service.utente.UtenteService;
 import it.prova.materialapirest.web.api.exception.IdNotNullForInsertException;
 import it.prova.materialapirest.web.api.exception.UtenteNotFoundException;
-
-
 
 @RestController
 @RequestMapping("/api/utente")
@@ -35,15 +33,17 @@ import it.prova.materialapirest.web.api.exception.UtenteNotFoundException;
 public class UtenteController {
 	@Autowired
 	private UtenteService utenteService;
+
 	// questa mi serve solo per capire se solo ADMIN vi ha accesso
 	@GetMapping("/testSoloAdmin")
 	public String test() {
 		return "OK";
 	}
+
 	@GetMapping("/mostraRuoli")
 	public String mostra(Utente utente) {
 		return utenteService.mostraRuoli(utente);
-		
+
 	}
 
 	@GetMapping(value = "/userInfo")
@@ -60,28 +60,21 @@ public class UtenteController {
 		return ResponseEntity.ok(new UtenteInfoJWTResponseDTO(utenteLoggato.getNome(), utenteLoggato.getCognome(),
 				utenteLoggato.getUsername(), ruolo));
 	}
-	
-	
+
 	@GetMapping
-	public List<Utente> getAll() {
-		return utenteService.listAllUtenti();
-	}
-	//aggiunto angular
-	@GetMapping("/listaUtenti")
-	public List<Utente> getAllList() {
-		return utenteService.listAllUtenti();
-	}
-	
-	@PostMapping
-	public void createNew(@Valid @RequestBody Utente utenteInput) {
-		if (utenteInput.getId() != null)
-			throw new IdNotNullForInsertException("Non è ammesso fornire un id per la creazione");
-	    utenteService.inserisciNuovo(utenteInput);
+	public List<UtenteDTO> getAllList() {
+		return UtenteDTO.createUtenteDTOListFromModelList(utenteService.listAllUtenti());
 	}
 
-	
+	@PostMapping
+	public void createNew(@Valid @RequestBody UtenteDTO utenteInput) {
+		if (utenteInput.getId() != null)
+			throw new IdNotNullForInsertException("Non è ammesso fornire un id per la creazione");
+	    utenteService.inserisciNuovo(utenteInput.buildUtenteModel());
+	}
+
 	@GetMapping("/{id}")
-	public Utente findById(@PathVariable(value = "id", required = true) long id) {
+	public UtenteDTO findById(@PathVariable(value = "id", required = true) long id) {
 		Utente utente = utenteService.caricaSingoloUtenteConRuoli(id);
 		String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -89,18 +82,18 @@ public class UtenteController {
 			throw new UtenteNotFoundException("Utente not found con id: " + id);
 		//aggiungere condizione utente
 
-		return utente;
+		return UtenteDTO.buildUtenteDTOFromModel(utente);
 	}
-	
+
 	@PutMapping("/{id}")
-	public void update(@Valid @RequestBody Utente utenteInput, @PathVariable(required = true) Long id) {
+	public void update(@Valid @RequestBody UtenteDTO utenteInput, @PathVariable(required = true) Long id) {
 		Utente utente = utenteService.caricaSingoloUtente(id);
 
 		if (utente == null)
 			throw new UtenteNotFoundException("Utente not found con id: " + id);
 
 		utenteInput.setId(id);
-		utenteService.aggiorna(utenteInput);
+		utenteService.aggiorna(utenteInput.buildUtenteModel());
 	}
 
 	@DeleteMapping("/{id}")
@@ -112,10 +105,10 @@ public class UtenteController {
 	}
 
 	@PostMapping("/search")
-	public List<Utente> search(@RequestBody Utente example, Principal principal) {
-		return utenteService.findByExample(example);
+	public List<UtenteDTO> search(@RequestBody UtenteDTO example, Principal principal) {
+		return UtenteDTO.createUtenteDTOListFromModelList(utenteService.findByExample(example.buildUtenteModel()));
 	}
-			
+
 	@PutMapping("/cambiaStato/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void changeUserAbilitation(@PathVariable(value = "id", required = true) long id) {
@@ -130,4 +123,20 @@ public class UtenteController {
 			throw new UtenteNotFoundException("Utente not found con id: " + id);
 		utenteService.disabilityUserAbilitation(id);
 	}
+
+	
+	 /* @PostMapping("/list") public String listRegisti(RegistaDTO
+	 * registaExample, @RequestParam(defaultValue = "0") Integer pageNo,
+	 * 
+	 * @RequestParam(defaultValue = "10") Integer
+	 * pageSize, @RequestParam(defaultValue = "id") String sortBy, ModelMap model) {
+	 * 
+	 * List<Regista> registi =
+	 * registaService.findByExampleWithPagination(registaExample.buildRegistaModel()
+	 * , pageNo, pageSize, sortBy).getContent();
+	 * 
+	  model.addAttribute("registi_list_attribute",
+	  RegistaDTO.createRegistaDTOListFromModelList(registi)); return
+	  "regista/list"; } */
+	  
 }

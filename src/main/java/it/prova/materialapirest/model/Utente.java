@@ -121,6 +121,17 @@ public class Utente {
 		this.cognome = cognome;
 	    this.dataNascita=dataNascita;
 	}
+	
+	public Utente(Long id,String username,String nome, String cognome,Date dataNascita,StatoUtente stato) {
+		super();
+		this.id=id;
+		this.username=username;
+		this.nome=nome;
+		this.cognome=cognome;
+		this.dataNascita=dataNascita;
+		this.stato=stato;
+		
+	}
 
 	public Long getId() {
 		return id;
